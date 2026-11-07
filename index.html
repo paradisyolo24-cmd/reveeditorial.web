@@ -343,6 +343,15 @@ footer{padding-block:8px 36px; text-align:center; color:var(--muted); font-size:
 .plink.soc{min-height:44px;padding:0 16px;background:var(--glass);border:1px solid var(--glass-line);color:var(--ink);backdrop-filter:blur(8px)}
 .links .plink.read:hover,.plink.soc:hover{transform:translateY(-2px);filter:brightness(1.05)}
 .plink svg{width:20px;height:20px;flex:none}.links{gap:10px}
+@media (max-width:900px){.s-hero{grid-template-columns:minmax(0,1fr);grid-template-areas:"title" "cover"}.s-cover{justify-content:center}.s-title{align-items:flex-start}}
+.car{position:relative}
+.car .arrow{position:absolute;top:calc(50% - 56px);z-index:6;width:54px;height:54px;background:rgba(255,255,255,.9);color:#27264a;border:1px solid rgba(255,255,255,1);transition:transform .2s,background .2s}
+:root[data-theme="dark"] .car .arrow{background:rgba(34,31,72,.92);color:#fff;border-color:rgba(255,255,255,.25)}
+.car .arrow:hover:not(:disabled){transform:scale(1.08)}
+.car .arrow.prev{left:-6px}.car .arrow.next{right:-6px}
+.track{cursor:grab}
+@media (hover:none){.car .arrow{display:none}}
+@media (max-width:640px){.car .arrow{display:none}}
 </style>
 </head>
 <body>
@@ -681,6 +690,19 @@ r.setAttribute('data-theme',t)})();
   }
   var books = carousel('carBooks');
   var authors = carousel('carAuthors');
+  [books, authors].forEach(function(c){
+    var t = c.track, down = false, sx = 0, sl = 0, moved = false;
+    t.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse' || e.button !== 0) return; down = true; moved = false; sx = e.clientX; sl = t.scrollLeft; });
+    window.addEventListener('pointermove', function(e){
+      if (!down) return;
+      var dx = e.clientX - sx;
+      if (Math.abs(dx) > 5 && !moved){ moved = true; t.style.scrollSnapType = 'none'; t.style.cursor = 'grabbing'; }
+      if (moved) t.scrollLeft = sl - dx;
+    });
+    window.addEventListener('pointerup', function(){ if (!down) return; down = false; if (moved){ t.style.scrollSnapType = ''; t.style.cursor = ''; } });
+    t.addEventListener('click', function(e){ if (moved){ e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+    t.addEventListener('dragstart', function(e){ e.preventDefault(); });
+  });
 
   function focusCard(car, selector, sectionId){
     var card = car.track.querySelector(selector);
